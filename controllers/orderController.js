@@ -5,7 +5,8 @@ const Order = require("../models/orderModel");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 const getOrder = asyncHandler(async (req, res) => {
-  const { user_id } = req.params;
+  const { user_id } = req.body;
+  //   console.log(user_id);
 
   if (!user_id) {
     res.status(400);
@@ -21,16 +22,24 @@ const getOrder = asyncHandler(async (req, res) => {
   res.status(200).json({ orders });
 });
 
+// lay  nhung order co user_id
 const getUserOrder = async (user_id) => {
-  return await Order.find({ user_id: user_id, status: "cart" }).populate(
-    "product_id"
-  );
+  //   console.log(user_id);
+  //
+  const result = await Order.find({
+    user_id: user_id,
+    status: "cart",
+  }).populate("product_id");
+  return result;
 };
 
 const addOrder = asyncHandler(async (req, res) => {
+  // lay gia tri tu request
   const { user_id, product_id, quantity } = req.body;
 
+  // so sanh dieu kien
   if (!user_id || !product_id || !quantity || quantity <= 0) {
+    // tra ve loi cho client
     res.status(400);
     throw new Error("All fields are mandatory!");
   }
@@ -40,15 +49,19 @@ const addOrder = asyncHandler(async (req, res) => {
   //     throw new Error("User not found");
   //   }
 
+  // lay cac order theo user_id, product_id
   const order = await Order.findOne({
     user_id: user_id,
     status: "cart",
     product_id: product_id,
   });
+  // neu order da co san
   if (order) {
     order.quantity += quantity;
+    // order.quantity = order.quantity + quantity;
     await order.save();
   } else {
+    // tao order moi trong mongo
     await Order.create({
       user_id,
       product_id,
@@ -63,11 +76,12 @@ const addOrder = asyncHandler(async (req, res) => {
 
 const updateOrder = asyncHandler(async (req, res) => {
   const { order_id, quantity } = req.body;
+  console.log(order_id, quantity);
 
-  if (!order_id || !quantity || quantity <= 0) {
-    res.status(400);
-    throw new Error("All fields are mandatory!");
-  }
+  //   if (!order_id || !quantity || quantity <= 0) {
+  //     res.status(400);
+  //     throw new Error("All fields are mandatory!");
+  //   }
 
   if (!ObjectId.isValid(order_id)) {
     res.status(404);
@@ -80,7 +94,7 @@ const updateOrder = asyncHandler(async (req, res) => {
     throw new Error("Order not found");
   }
 
-  order.quantity = quantity;
+  order.quantity = order.quantity + quantity;
   await order.save();
 
   const orders = await getUserOrder(order.user_id);

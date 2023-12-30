@@ -3,14 +3,14 @@ const {
   getOrder,
   addOrder,
   updateOrder,
-  deleteOrder
+  deleteOrder,
 } = require("../controllers/orderController");
 
 const router = express.Router();
 
-router.get("/:user_id", getOrder);
+router.post("/", getOrder);
 router.post("/add", addOrder);
-router.put("/update", updateOrder);
+router.patch("/update", updateOrder);
 router.delete("/delete/:order_id", deleteOrder);
 
 module.exports = router;
